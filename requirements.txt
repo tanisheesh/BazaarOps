@@ -1,0 +1,29 @@
+# BazaarOps - Production Requirements
+# Install: pip install -r requirements.txt
+
+# Core
+python-dotenv
+
+# FastAPI & Web
+fastapi==0.104.1
+uvicorn[standard]
+httpx<0.28
+flask
+
+# Database
+supabase
+
+# Telegram Bot
+python-telegram-bot==22.6
+
+# AI & Scheduling
+anthropic==0.39.0
+schedule==1.2.0
+
+# Redis - pub/sub messaging and caching
+# redis.asyncio (async client) is bundled with redis>=4.2, no separate aioredis needed
+redis==5.0.1
+
+# Fuzzy string matching for NLP product matching (task 5.2)
+fuzzywuzzy==0.18.0
+python-Levenshtein==0.25.0

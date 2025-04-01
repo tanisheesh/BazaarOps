@@ -1,0 +1,91 @@
+services:
+  # Owner Service
+  - type: web
+    name: bazaarops-owner-service
+    env: python
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd owner-service && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SUPABASE_URL
+        value: https://rhvisrtmewswqfebzjtl.supabase.co
+      - key: SUPABASE_KEY
+        sync: false
+      - key: OWNER_BOT_TOKEN
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PORT
+        value: 8001
+
+  # Customer Service
+  - type: web
+    name: bazaarops-customer-service
+    env: python
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd customer-service && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SUPABASE_URL
+        value: https://rhvisrtmewswqfebzjtl.supabase.co
+      - key: SUPABASE_KEY
+        sync: false
+      - key: CUSTOMER_BOT_TOKEN
+        sync: false
+      - key: PORT
+        value: 8002
+
+  # Agent Service
+  - type: web
+    name: bazaarops-agent-service
+    env: python
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd agent-service && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SUPABASE_URL
+        value: https://rhvisrtmewswqfebzjtl.supabase.co
+      - key: SUPABASE_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PORT
+        value: 8003
+
+  # Customer Bot
+  - type: web
+    name: bazaarops-customer-bot
+    env: python
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd telegram-bots/customer-bot && python bot.py
+    envVars:
+      - key: CUSTOMER_BOT_TOKEN
+        sync: false
+      - key: SUPABASE_URL
+        value: https://rhvisrtmewswqfebzjtl.supabase.co
+      - key: SUPABASE_KEY
+        sync: false
+      - key: CUSTOMER_SERVICE_URL
+        value: https://bazaarops-customer-service.onrender.com
+
+  # Owner Bot with Scheduler
+  - type: web
+    name: bazaarops-owner-bot
+    env: python
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd telegram-bots/owner-bot && python scheduler.py
+    envVars:
+      - key: OWNER_BOT_TOKEN
+        sync: false
+      - key: SUPABASE_URL
+        value: https://rhvisrtmewswqfebzjtl.supabase.co
+      - key: SUPABASE_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OWNER_SERVICE_URL
+        value: https://bazaarops-owner-service.onrender.com
+      - key: AGENT_SERVICE_URL
+        value: https://bazaarops-agent-service.onrender.com
