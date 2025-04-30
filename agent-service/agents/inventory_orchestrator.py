@@ -80,7 +80,7 @@ class DemandForecastingModule:
             logger.error("fetch_historical_sales error: %s", exc)
             return []
 
-    # Calculate moving average
+    # 2.1.2 Calculate moving average
     def calculate_moving_average(self, sales_data: list[dict], window: int = 7) -> float:
         """Return the moving average of daily sales over the last *window* days."""
         if not sales_data:
