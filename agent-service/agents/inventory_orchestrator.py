@@ -23,7 +23,7 @@ def _get_publisher():
     return AgentMessagePublisher()
 
 
-async def send_collaboration_message(from_agent: str, to_agent: str, message_type: str, data: dict, priority: int = 5) -> None:
+async def send_collaboration_message(from_agent: str, to_agent: str, message_type: str, data: dict, priority: int = 4) -> None:
     """Publish a collaboration message via the agent message bus."""
     try:
         from agents.message_bus.protocol import AgentMessage
