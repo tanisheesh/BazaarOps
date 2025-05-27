@@ -62,7 +62,7 @@ class DemandForecastingModule:
 
     # 2.1.1 Fetch historical sales data
     def fetch_historical_sales(
-        self, store_id: str, product_id: str, days: int = 30
+        self, store_id: str, product_id: str, days: int = 28
     ) -> list[dict]:
         """Return daily sales quantities for the last *days* days."""
         try:
