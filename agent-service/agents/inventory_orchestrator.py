@@ -60,7 +60,7 @@ class DemandForecastingModule:
     def __init__(self, supabase_client=None):
         self.supabase = supabase_client or _get_supabase()
 
-    # Fetch historical sales data
+    # 2.1.1 Fetch historical sales data
     def fetch_historical_sales(
         self, store_id: str, product_id: str, days: int = 30
     ) -> list[dict]:
