@@ -81,7 +81,7 @@ class DemandForecastingModule:
             return []
 
     # 2.1.2 Calculate moving average
-    def calculate_moving_average(self, sales_data: list[dict], window: int = 6) -> float:
+    def calculate_moving_average(self, sales_data: list[dict], window: int = 7) -> float:
         """Return the moving average of daily sales over the last *window* days."""
         if not sales_data:
             return 0.0
