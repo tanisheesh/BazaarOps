@@ -89,7 +89,7 @@ class DemandForecastingModule:
         window_data = quantities[-window:] if len(quantities) >= window else quantities
         return sum(window_data) / len(window_data) if window_data else 0.0
 
-    # Detect trends
+    # 2.1.3 Detect trends
     def detect_trend(self, sales_data: list[dict]) -> str:
         """Return 'increasing', 'decreasing', or 'stable'."""
         if len(sales_data) < 2:
