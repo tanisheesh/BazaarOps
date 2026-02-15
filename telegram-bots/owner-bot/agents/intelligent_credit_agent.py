@@ -31,11 +31,11 @@ async def analyze_credit_with_ai(store_id: str):
         if not chat_id:
             return False
         
-        # Get credit orders
+        # Get credit orders (unpaid orders)
         orders = supabase.table("orders")\
             .select("*, customers(name, phone)")\
             .eq("store_id", store_id)\
-            .in_("status", ["pending", "credit"])\
+            .eq("payment_status", "unpaid")\
             .execute()
         
         if not orders.data or len(orders.data) == 0:
@@ -46,7 +46,9 @@ async def analyze_credit_with_ai(store_id: str):
         credit_accounts = []
         for order in orders.data:
             customer = order.get('customers', {})
-            days_pending = (datetime.now() - datetime.fromisoformat(order['created_at'].replace('Z', '+00:00'))).days
+            # Parse datetime with timezone awareness
+            order_date = datetime.fromisoformat(order['created_at'].replace('Z', '+00:00'))
+            days_pending = (datetime.now(order_date.tzinfo) - order_date).days
             
             credit_accounts.append({
                 "customer_name": customer.get('name', 'Unknown'),

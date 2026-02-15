@@ -74,6 +74,26 @@ export default function Orders() {
     }
   }
 
+  const markAsPaid = async (orderId: string) => {
+    if (!storeId) return
+    
+    try {
+      const response = await fetch(`${API_URL}/api/owner/orders/${orderId}/payment`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payment_status: 'paid' })
+      })
+      
+      if (response.ok) {
+        await fetchOrders(storeId)
+        alert('✅ Payment marked as received!')
+      }
+    } catch (error) {
+      console.error('Error updating payment:', error)
+      alert('❌ Failed to update payment status')
+    }
+  }
+
   const sendDeliveryNotification = async (phone: string, orderId: string) => {
     try {
       console.log('📱 Sending delivery notification to:', phone)
@@ -264,6 +284,14 @@ export default function Orders() {
                         className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium"
                       >
                         Mark as Delivered
+                      </button>
+                    )}
+                    {order.payment_status === 'unpaid' && (
+                      <button
+                        onClick={() => markAsPaid(order.order_id)}
+                        className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium"
+                      >
+                        💰 Mark as Paid
                       </button>
                     )}
                     {order.status === 'completed' && (

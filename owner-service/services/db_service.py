@@ -75,6 +75,20 @@ class OwnerDatabaseService:
             return None
     
     @staticmethod
+    def update_payment_status(order_id: str, payment_status: str):
+        """Update payment status"""
+        try:
+            response = supabase.table("orders")\
+                .update({"payment_status": payment_status, "updated_at": "now()"})\
+                .eq("id", order_id)\
+                .execute()
+            
+            return response.data
+        except Exception as e:
+            print(f"❌ Error updating payment: {e}")
+            return None
+    
+    @staticmethod
     def get_dashboard_stats(store_id: str):
         """Get dashboard statistics"""
         from datetime import datetime

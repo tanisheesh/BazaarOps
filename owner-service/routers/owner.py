@@ -153,6 +153,37 @@ async def update_order_status(order_id: str, update: OrderStatusUpdate):
         "data": result
     }
 
+@router.put("/orders/{order_id}/payment")
+async def update_payment_status(order_id: str, update: dict):
+    """
+    Update payment status
+    
+    Body: {
+        "payment_status": "paid"
+    }
+    """
+    print(f"💰 Updating payment for order {order_id} to {update.get('payment_status')}")
+    
+    valid_statuses = ["paid", "unpaid"]
+    payment_status = update.get("payment_status")
+    
+    if payment_status not in valid_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid payment status. Must be one of: {', '.join(valid_statuses)}"
+        )
+    
+    result = db.update_payment_status(order_id, payment_status)
+    
+    if not result:
+        raise HTTPException(status_code=500, detail="Could not update payment status")
+    
+    return {
+        "success": True,
+        "message": "Payment status updated",
+        "data": result
+    }
+
 # Customers endpoint
 @router.get("/customers/{store_id}")
 async def get_customers(store_id: str):

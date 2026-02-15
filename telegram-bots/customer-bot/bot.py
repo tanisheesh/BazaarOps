@@ -3,6 +3,7 @@ from telegram.ext import (
     Application,
     CommandHandler,
     MessageHandler,
+    CallbackQueryHandler,
     filters,
     ContextTypes,
     ConversationHandler
@@ -446,16 +447,91 @@ async def place_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
         
+        # Ask payment method
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        
+        total = quantity * matching_product["price"]
+        keyboard = [
+            [
+                InlineKeyboardButton("💵 Pay Cash", callback_data=f"pay_cash_{matching_product['product_id']}_{quantity}"),
+                InlineKeyboardButton("💳 Credit (Pay Later)", callback_data=f"pay_credit_{matching_product['product_id']}_{quantity}")
+            ]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.message.reply_text(
+            f"📦 *Order Summary*\n\n"
+            f"Product: {matching_product['name']}\n"
+            f"Quantity: {quantity} {matching_product['unit']}\n"
+            f"Price: ₹{matching_product['price']}/{matching_product['unit']}\n"
+            f"*Total: ₹{total}*\n\n"
+            f"Choose payment method:",
+            parse_mode='Markdown',
+            reply_markup=reply_markup
+        )
+    
+    except ValueError:
+        await update.message.reply_text("❌ Invalid quantity.")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        await update.message.reply_text("❌ Error processing order.")
+
+# Handle payment callback
+async def handle_payment_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if user_id not in user_sessions or "store_id" not in user_sessions[user_id]:
+        await query.edit_message_text("⚠️ Session expired. Please start again.")
+        return
+    
+    store_id = user_sessions[user_id]["store_id"]
+    customer = await get_customer_data(user_id, store_id)
+    
+    if not customer:
+        await query.edit_message_text("❌ Profile not found.")
+        return
+    
+    try:
+        # Parse callback data: pay_cash_<product_id>_<quantity> or pay_credit_<product_id>_<quantity>
+        parts = query.data.split("_")
+        payment_type = parts[1]  # "cash" or "credit"
+        product_id = parts[2]
+        quantity = float(parts[3])
+        
+        is_credit = (payment_type == "credit")
+        
+        # Get product details
+        async with httpx.AsyncClient() as client:
+            products_response = await client.get(
+                f"{CUSTOMER_SERVICE_URL}/api/customer/products/{store_id}"
+            )
+            products_data = products_response.json()
+        
+        matching_product = None
+        for product in products_data.get("products", []):
+            if product["product_id"] == product_id:
+                matching_product = product
+                break
+        
+        if not matching_product:
+            await query.edit_message_text("❌ Product not found.")
+            return
+        
         # Place order
         order_data = {
             "customer_phone": customer["phone"],
-            "items": [{
-                "product_id": matching_product["product_id"],
-                "product_name": matching_product["name"],
-                "quantity": quantity,
-                "unit_price": matching_product["price"]
-            }],
-            "is_credit": False
+            "items": [
+                {
+                    "product_id": product_id,
+                    "product_name": matching_product["name"],
+                    "quantity": quantity,
+                    "unit_price": matching_product["price"]
+                }
+            ],
+            "is_credit": is_credit
         }
         
         async with httpx.AsyncClient() as client:
@@ -467,25 +543,30 @@ async def place_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
             order_result = order_response.json()
         
         if order_result.get("success"):
-            total = quantity * matching_product["price"]
-            await update.message.reply_text(
-                f"✅ *Order Confirmed!*\n\n"
-                f"Product: {matching_product['name']}\n"
-                f"Quantity: {quantity} {matching_product['unit']}\n"
-                f"Price: ₹{matching_product['price']}/{matching_product['unit']}\n"
-                f"*Total: ₹{total}*\n\n"
-                f"Order ID: `{order_result['order_id'][:8]}...`\n\n"
-                f"We'll update you when it's delivered! 📦",
-                parse_mode='Markdown'
+            payment_status = "💳 Credit (Pay Later)" if is_credit else "💵 Cash on Delivery"
+            
+            # Delete the payment selection message
+            await query.message.delete()
+            
+            # Send new success message
+            await context.bot.send_message(
+                chat_id=query.message.chat_id,
+                text=f"✅ *Order Placed Successfully!*\n\n"
+                     f"Order ID: `{order_result['order_id'][:8]}...`\n"
+                     f"Product: {matching_product['name']}\n"
+                     f"Quantity: {quantity} {matching_product['unit']}\n"
+                     f"Total: ₹{order_result['total_amount']}\n"
+                     f"Payment: {payment_status}\n\n"
+                     f"{'⏳ Your order will be delivered soon!' if not is_credit else '💳 Pay when convenient!'}",
+                parse_mode='Markdown',
+                reply_markup=get_main_menu()
             )
         else:
-            await update.message.reply_text("❌ Could not place order.")
+            await query.edit_message_text(f"❌ {order_result.get('message', 'Order failed')}")
     
-    except ValueError:
-        await update.message.reply_text("❌ Invalid quantity.")
     except Exception as e:
-        print(f"❌ Error: {e}")
-        await update.message.reply_text("❌ Error processing order.")
+        print(f"❌ Error placing order: {e}")
+        await query.edit_message_text("❌ Error placing order. Please try again.")
 
 # View orders
 async def view_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -614,6 +695,7 @@ def main():
     application.add_handler(edit_name_handler)
     application.add_handler(edit_phone_handler)
     application.add_handler(edit_address_handler)
+    application.add_handler(CallbackQueryHandler(handle_payment_callback))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("✅ Bot is running!")

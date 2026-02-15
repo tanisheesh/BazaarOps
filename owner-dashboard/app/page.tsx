@@ -187,7 +187,7 @@ export default function Dashboard() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <Link 
             href="/inventory" 
             className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-lg text-center transition-colors"
@@ -205,13 +205,23 @@ export default function Dashboard() {
           </Link>
           
           <Link 
+            href="/credit" 
+            className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-lg text-center transition-colors"
+          >
+            <div className="text-4xl mb-3">💳</div>
+            <div className="font-semibold">Credit</div>
+          </Link>
+          
+          <Link 
             href="/customers" 
             className="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-lg text-center transition-colors"
           >
             <div className="text-4xl mb-3">👥</div>
             <div className="font-semibold">Customers</div>
           </Link>
-          
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
           <Link 
             href="/settings" 
             className="bg-orange-600 hover:bg-orange-700 text-white p-6 rounded-lg text-center transition-colors"
