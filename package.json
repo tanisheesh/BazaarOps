@@ -1,0 +1,15 @@
+{
+  "name": "bazaarops",
+  "version": "1.0.0",
+  "description": "AI-Powered Store Management System with Claude Agents",
+  "scripts": {
+    "start": "python main.py",
+    "backend": "cd owner-service && python main.py",
+    "frontend": "cd owner-dashboard && npm run dev",
+    "bot": "cd telegram-bots/owner-bot && python bot.py",
+    "ai-scheduler": "cd telegram-bots/owner-bot && python scheduler.py"
+  },
+  "keywords": ["bazaarops", "store-management", "claude-ai", "telegram-bot"],
+  "author": "",
+  "license": "MIT"
+}
