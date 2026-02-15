@@ -454,3 +454,17 @@ For issues and questions:
 ---
 
 **Made with ❤️ for small business owners**
+
+## 🚀 Deployment
+
+For detailed deployment instructions:
+- **Backend (Replit)** + **Frontend (Vercel)** → See [DEPLOYMENT.md](DEPLOYMENT.md)
+
+Quick summary:
+1. Deploy backend to Replit (Python services + Telegram bots)
+2. Deploy frontend to Vercel (Next.js dashboard)
+3. Update environment variables with production URLs
+4. Test all integrations
+
+Full step-by-step guide available in DEPLOYMENT.md file.
+

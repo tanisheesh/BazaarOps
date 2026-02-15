@@ -1,17 +1,25 @@
-run = "bash start.sh"
+run = "python main.py"
 entrypoint = "main.py"
 
 [nix]
-channel = "stable-22_11"
+channel = "stable-23_11"
 
 [deployment]
-run = ["bash", "start.sh"]
+run = ["python", "main.py"]
 deploymentTarget = "cloudrun"
 
 [[ports]]
-localPort = 3000
+localPort = 8001
 externalPort = 80
 
 [[ports]]
-localPort = 8001
-externalPort = 8001
+localPort = 8002
+externalPort = 8002
+
+[[ports]]
+localPort = 8003
+externalPort = 8003
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
