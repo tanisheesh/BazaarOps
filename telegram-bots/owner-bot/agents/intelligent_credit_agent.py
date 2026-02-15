@@ -17,7 +17,7 @@ supabase = create_client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_KEY")
 )
-bot = Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
+bot = Bot(token=os.getenv("OWNER_BOT_TOKEN"))
 
 async def analyze_credit_with_ai(store_id: str):
     """Use Claude to analyze credit patterns and provide collection strategies"""

@@ -5,11 +5,14 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
-load_dotenv()
+# Load .env from root directory
+root_dir = Path(__file__).parent.parent.parent
+load_dotenv(dotenv_path=root_dir / ".env")
 
 # Initialize
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+BOT_TOKEN = os.getenv("OWNER_BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
 
 supabase: Client = create_client(

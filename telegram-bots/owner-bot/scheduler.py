@@ -8,6 +8,11 @@ import time
 from datetime import datetime
 from supabase import create_client
 from dotenv import load_dotenv
+from pathlib import Path
+
+# Load .env from root directory
+root_dir = Path(__file__).parent.parent.parent
+load_dotenv(dotenv_path=root_dir / ".env")
 
 # Import AI agents
 import sys
@@ -15,8 +20,6 @@ sys.path.append(os.path.dirname(__file__))
 from agents.daily_report_agent import generate_daily_report
 from agents.intelligent_restocking_agent import analyze_inventory_with_ai
 from agents.intelligent_credit_agent import analyze_credit_with_ai
-
-load_dotenv()
 
 supabase = create_client(
     os.getenv("SUPABASE_URL"),

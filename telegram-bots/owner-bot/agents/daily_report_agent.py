@@ -17,7 +17,7 @@ supabase = create_client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_KEY")
 )
-bot = Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
+bot = Bot(token=os.getenv("OWNER_BOT_TOKEN"))
 
 async def generate_daily_report(store_id: str):
     """Generate AI-powered daily sales report with insights"""

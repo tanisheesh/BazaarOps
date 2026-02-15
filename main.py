@@ -20,18 +20,40 @@ def main():
     processes = []
     
     try:
-        # 1. Start FastAPI Backend
-        print("🚀 Starting FastAPI Backend...")
-        fastapi_process = subprocess.Popen(
+        # 1. Start Owner Service (FastAPI Backend)
+        print("🚀 Starting Owner Service...")
+        owner_service_process = subprocess.Popen(
             [sys.executable, "main.py"],
             cwd=str(BASE_DIR / "owner-service"),
             shell=True
         )
-        processes.append(("FastAPI-Backend", fastapi_process))
-        print("✅ Started: FastAPI-Backend (Port 8001)")
+        processes.append(("Owner-Service", owner_service_process))
+        print("✅ Started: Owner-Service (Port 8001)")
         time.sleep(2)
         
-        # 2. Start Next.js Dashboard
+        # 2. Start Customer Service (FastAPI Backend)
+        print("🛍️ Starting Customer Service...")
+        customer_service_process = subprocess.Popen(
+            [sys.executable, "main.py"],
+            cwd=str(BASE_DIR / "customer-service"),
+            shell=True
+        )
+        processes.append(("Customer-Service", customer_service_process))
+        print("✅ Started: Customer-Service (Port 8002)")
+        time.sleep(2)
+        
+        # 3. Start Agent Service (AI Agents)
+        print("🤖 Starting Agent Service...")
+        agent_service_process = subprocess.Popen(
+            [sys.executable, "main.py"],
+            cwd=str(BASE_DIR / "agent-service"),
+            shell=True
+        )
+        processes.append(("Agent-Service", agent_service_process))
+        print("✅ Started: Agent-Service (Port 8003)")
+        time.sleep(2)
+        
+        # 4. Start Next.js Dashboard
         print("🎨 Starting Next.js Dashboard...")
         nextjs_process = subprocess.Popen(
             ["npm", "run", "dev"],
@@ -42,18 +64,29 @@ def main():
         print("✅ Started: NextJS-Dashboard (Port 3000)")
         time.sleep(2)
         
-        # 3. Start Telegram Bot
-        print("🤖 Starting Telegram Bot...")
-        bot_process = subprocess.Popen(
+        # 5. Start Owner Telegram Bot
+        print("📱 Starting Owner Bot...")
+        owner_bot_process = subprocess.Popen(
             [sys.executable, "bot.py"],
             cwd=str(BASE_DIR / "telegram-bots" / "owner-bot"),
             shell=True
         )
-        processes.append(("Telegram-Bot", bot_process))
-        print("✅ Started: Telegram-Bot")
+        processes.append(("Owner-Bot", owner_bot_process))
+        print("✅ Started: Owner-Bot (@BazaarOpsAdminBot)")
         time.sleep(2)
         
-        # 4. Start AI Scheduler
+        # 6. Start Customer Telegram Bot
+        print("🛒 Starting Customer Bot...")
+        customer_bot_process = subprocess.Popen(
+            [sys.executable, "bot.py"],
+            cwd=str(BASE_DIR / "telegram-bots" / "customer-bot"),
+            shell=True
+        )
+        processes.append(("Customer-Bot", customer_bot_process))
+        print("✅ Started: Customer-Bot (@BazaarOpsCustomerHelpBot)")
+        time.sleep(2)
+        
+        # 7. Start AI Scheduler
         print("🧠 Starting AI Agent Scheduler...")
         scheduler_process = subprocess.Popen(
             [sys.executable, "scheduler.py"],
@@ -68,8 +101,11 @@ def main():
         print("=" * 70)
         print("\n📱 Access Points:")
         print("   • Dashboard: http://localhost:3000")
-        print("   • API: http://localhost:8001")
-        print("   • Bot: @BazaarOpsAdminBot")
+        print("   • Owner API: http://localhost:8001")
+        print("   • Customer API: http://localhost:8002")
+        print("   • Agent API: http://localhost:8003")
+        print("   • Owner Bot: @BazaarOpsAdminBot")
+        print("   • Customer Bot: @BazaarOpsCustomerHelpBot")
         print("\n🧠 Claude AI Agents (Automated):")
         print("   • 10:00 AM - AI Inventory Analysis (demand prediction, restocking)")
         print("   • 04:00 PM - AI Inventory Analysis (afternoon check)")
@@ -80,8 +116,12 @@ def main():
         print("   • Intelligent restocking recommendations")
         print("   • Credit risk analysis with collection strategies")
         print("   • Daily AI-powered business insights")
+        print("   • Customer ordering via Telegram (deep linking)")
+        print("   • Automatic inventory reduction on orders")
+        print("   • Auto-notifications on delivery")
         print("   • WhatsApp supplier integration")
-        print("   • Telegram notifications")
+        print("\n🔗 Customer Deep Linking:")
+        print("   Share: https://t.me/BazaarOpsCustomerHelpBot?start=YOUR_STORE_ID")
         print("\nPress Ctrl+C to stop all services\n")
         
         # Keep running and monitor processes

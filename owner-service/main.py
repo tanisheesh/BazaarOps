@@ -3,9 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from routers import owner
 import os
+from pathlib import Path
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from root .env
+root_dir = Path(__file__).parent.parent
+load_dotenv(dotenv_path=root_dir / ".env")
 
 # Create FastAPI app
 app = FastAPI(

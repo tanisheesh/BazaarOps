@@ -54,25 +54,20 @@ Complete store management platform with **Claude 3.5 Sonnet AI Agents** for inte
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.13+ (or 3.8+)
 - Node.js 16+
 - Supabase account
 - **Claude API Key** (Get from https://console.anthropic.com/)
+- Telegram Bot Tokens (Get from @BotFather)
 
 ### Installation
 
 1. **Clone & Install Dependencies**
 ```bash
-# Install Python dependencies
-cd owner-service
+# Install ALL dependencies from root (unified requirements)
 pip install -r requirements.txt
-cd ..
 
-cd telegram-bots/owner-bot
-pip install -r requirements.txt
-cd ../..
-
-# Install Node.js dependencies
+# Install Node.js dependencies for dashboard
 cd owner-dashboard
 npm install
 cd ..
@@ -80,42 +75,59 @@ cd ..
 
 2. **Configure Environment Variables**
 
-**telegram-bots/owner-bot/.env**
-```env
-TELEGRAM_BOT_TOKEN=your_bot_token
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_service_role_key
-ANTHROPIC_API_KEY=your_claude_api_key  # Required for AI agents
+**Copy and configure the root .env file:**
+```bash
+cp .env.example .env
 ```
 
-**owner-dashboard/.env.local**
+**Edit `.env` with your credentials:**
 ```env
+# Database
+SUPABASE_URL=your-supabase-url
+SUPABASE_KEY=your-service-role-key
+
+# Telegram Bots
+OWNER_BOT_TOKEN=your-owner-bot-token
+CUSTOMER_BOT_TOKEN=your-customer-bot-token
+
+# AI
+ANTHROPIC_API_KEY=your-claude-api-key
+
+# Service URLs (default - no need to change)
+OWNER_SERVICE_URL=http://localhost:8001
+CUSTOMER_SERVICE_URL=http://localhost:8002
+AGENT_SERVICE_URL=http://localhost:8003
+```
+
+**Configure Dashboard `.env.local`:**
+```bash
+cd owner-dashboard
+# Create .env.local with:
 NEXT_PUBLIC_API_URL=http://localhost:8001
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_KEY=your_anon_key
 SUPABASE_SERVICE_KEY=your_service_role_key
-TELEGRAM_BOT_TOKEN=your_bot_token
-```
-
-**owner-service/.env**
-```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_service_role_key
+NEXT_PUBLIC_TELEGRAM_BOT_TOKEN=your_customer_bot_token
 ```
 
 3. **Start Everything**
 ```bash
+# Single command starts ALL services!
 python main.py
 ```
 
-This single command starts:
-- ✅ FastAPI Backend (Port 8001)
+This starts:
+- ✅ Owner Service (Port 8001)
+- ✅ Customer Service (Port 8002)
+- ✅ Agent Service (Port 8003)
 - ✅ Next.js Dashboard (Port 3000)
-- ✅ Telegram Bot (@BazaarOpsAdminBot)
+- ✅ Owner Bot (@BazaarOpsAdminBot)
+- ✅ Customer Bot (@BazaarOpsCustomerHelpBot)
 - ✅ Claude AI Agent Scheduler
 
 ## 📋 Complete Workflow
 
+### Owner Side
 1. **Owner Registration**
    - Visit http://localhost:3000/auth
    - Register with email, password, shop details
@@ -138,6 +150,23 @@ This single command starts:
    - Sends intelligent insights via Telegram
    - Provides actionable recommendations
    - Monitors inventory 24/7
+
+### Customer Side
+1. **Owner Shares Link**
+   - Owner gets unique link from Settings page
+   - Format: `https://t.me/BazaarOpsCustomerHelpBot?start=STORE_ID`
+   - Share with customers via WhatsApp/SMS
+
+2. **Customer Orders**
+   - Customer clicks link → Bot starts with store context
+   - View products, place orders via Telegram
+   - No manual store selection needed
+
+3. **Order Processing**
+   - Inventory automatically reduces
+   - Owner sees order in dashboard
+   - Owner marks as delivered
+   - Customer gets auto-notification
 
 ## 🤖 Bot Commands
 
@@ -174,25 +203,46 @@ This single command starts:
 
 ```
 BazaarOps/
+├── .env                             # 🔥 UNIFIED CONFIG (all services)
+├── .env.example                     # Template for .env
+├── requirements.txt                 # 🔥 UNIFIED REQUIREMENTS
 ├── main.py                          # Single entry point
-├── owner-service/                   # FastAPI backend
+│
+├── owner-service/                   # Owner FastAPI backend (Port 8001)
 │   ├── main.py
 │   ├── routers/
 │   └── services/
-├── owner-dashboard/                 # Next.js frontend
+│
+├── customer-service/                # Customer FastAPI backend (Port 8002)
+│   ├── main.py
+│   ├── routers/
+│   └── services/
+│
+├── agent-service/                   # AI Agent service (Port 8003)
+│   ├── main.py
+│   ├── agents/
+│   └── events/
+│
+├── owner-dashboard/                 # Next.js frontend (Port 3000)
 │   ├── app/
 │   │   ├── auth/                   # Authentication
 │   │   ├── inventory/              # Inventory management
 │   │   ├── orders/                 # Order tracking
-│   │   └── customers/              # Customer list
+│   │   ├── customers/              # Customer list
+│   │   └── settings/               # Customer bot link generator
 │   └── lib/
-└── telegram-bots/owner-bot/        # Telegram bot + AI agents
-    ├── bot.py                      # Bot commands
-    ├── scheduler.py                # AI agent scheduler
-    └── agents/
-        ├── intelligent_restocking_agent.py
-        ├── intelligent_credit_agent.py
-        └── daily_report_agent.py
+│
+└── telegram-bots/
+    ├── owner-bot/                   # Owner Telegram bot
+    │   ├── bot.py
+    │   ├── scheduler.py
+    │   └── agents/                  # Claude AI agents
+    │       ├── intelligent_restocking_agent.py
+    │       ├── intelligent_credit_agent.py
+    │       └── daily_report_agent.py
+    │
+    └── customer-bot/                # Customer Telegram bot
+        └── bot.py                   # Deep linking support
 ```
 
 ## 🔒 Security

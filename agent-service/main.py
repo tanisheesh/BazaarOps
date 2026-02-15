@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
+from pathlib import Path
 
-# Load .env first so agents get SUPABASE_* etc.
-load_dotenv()
+# Load .env from root directory
+root_dir = Path(__file__).parent.parent
+load_dotenv(dotenv_path=root_dir / ".env")
 
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware

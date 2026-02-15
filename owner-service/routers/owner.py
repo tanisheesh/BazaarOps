@@ -209,3 +209,55 @@ async def get_customer_telegram(phone: str):
     except Exception as e:
         print(f"❌ Error getting customer telegram: {e}")
         return {"telegram_chat_id": None}
+
+
+# Promotional Message endpoint
+class PromoMessage(BaseModel):
+    store_id: str
+    message: str
+    customer_ids: list[str]
+
+@router.post("/send-promo")
+async def send_promotional_message(promo: PromoMessage):
+    """
+    Send promotional message to all customers via Telegram
+    """
+    import httpx
+    from telegram import Bot
+    
+    print(f"📢 Sending promo to {len(promo.customer_ids)} customers")
+    
+    try:
+        # Get customer bot token
+        bot_token = os.getenv("CUSTOMER_BOT_TOKEN")
+        if not bot_token:
+            raise HTTPException(status_code=500, detail="Bot token not configured")
+        
+        bot = Bot(token=bot_token)
+        
+        success_count = 0
+        failed_count = 0
+        
+        # Send to each customer
+        for chat_id in promo.customer_ids:
+            try:
+                await bot.send_message(
+                    chat_id=chat_id,
+                    text=promo.message,
+                    parse_mode='Markdown'
+                )
+                success_count += 1
+            except Exception as e:
+                print(f"❌ Failed to send to {chat_id}: {e}")
+                failed_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Sent to {success_count} customers, {failed_count} failed",
+            "sent": success_count,
+            "failed": failed_count
+        }
+        
+    except Exception as e:
+        print(f"❌ Error sending promo: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

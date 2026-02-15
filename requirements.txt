@@ -1,0 +1,20 @@
+# BazaarOps - Unified Requirements
+# Compatible with Python 3.13
+
+# Core
+python-dotenv==1.0.0
+
+# FastAPI & Web
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.12.5
+
+# Database
+supabase==1.2.0
+
+# Telegram Bot
+python-telegram-bot>=21.0
+
+# AI & Scheduling
+anthropic
+schedule==1.2.0

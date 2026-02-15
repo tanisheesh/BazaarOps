@@ -16,6 +16,9 @@ export default function Settings() {
   const [preview, setPreview] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [promoMessage, setPromoMessage] = useState('')
+  const [sendingPromo, setSendingPromo] = useState(false)
+  const [promoStatus, setPromoStatus] = useState('')
 
   const AVAILABLE_VARIABLES = [
     { var: '{{shop_name}}', desc: 'Your shop name' },
@@ -136,6 +139,60 @@ Feel free to browse and order anytime!`
     }
   }
 
+  const sendPromoMessage = async () => {
+    if (!promoMessage.trim()) {
+      alert('Please enter a message')
+      return
+    }
+
+    setSendingPromo(true)
+    setPromoStatus('')
+
+    try {
+      // Get all customers with telegram_chat_id
+      const { data: customers, error } = await supabase
+        .from('customers')
+        .select('telegram_chat_id, name, phone')
+        .eq('store_id', storeId)
+        .not('telegram_chat_id', 'is', null)
+
+      if (error) throw error
+
+      if (!customers || customers.length === 0) {
+        setPromoStatus('⚠️ No customers found with Telegram accounts')
+        setSendingPromo(false)
+        return
+      }
+
+      // Send message via backend API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/owner/send-promo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          store_id: storeId,
+          message: promoMessage,
+          customer_ids: customers.map(c => c.telegram_chat_id)
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setPromoStatus(`✅ Message sent to ${customers.length} customers!`)
+        setPromoMessage('')
+      } else {
+        setPromoStatus(`❌ Failed to send messages: ${result.message}`)
+      }
+    } catch (error) {
+      console.error('Error sending promo:', error)
+      setPromoStatus('❌ Error sending promotional message')
+    } finally {
+      setSendingPromo(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -152,7 +209,74 @@ Feel free to browse and order anytime!`
       <div className="max-w-6xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-          <p className="text-gray-600">Customize your customer welcome message</p>
+          <p className="text-gray-600">Manage your store settings and customer bot</p>
+        </div>
+
+        {/* Customer Bot Link */}
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-6 mb-6 text-white">
+          <h2 className="text-2xl font-bold mb-2">📱 Customer Shopping Bot</h2>
+          <p className="mb-4 opacity-90">Share this link with your customers to let them shop via Telegram!</p>
+          
+          <div className="bg-white/20 backdrop-blur rounded-lg p-4">
+            <p className="text-sm mb-2 font-medium">Your Customer Bot Link:</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={`https://t.me/BazaarOpsCustomerHelpBot?start=${storeId}`}
+                readOnly
+                className="flex-1 px-4 py-2 bg-white/90 text-gray-900 rounded-lg font-mono text-sm"
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`https://t.me/BazaarOpsCustomerHelpBot?start=${storeId}`)
+                  alert('✅ Link copied to clipboard!')
+                }}
+                className="px-6 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50"
+              >
+                Copy Link
+              </button>
+            </div>
+            <p className="text-xs mt-2 opacity-75">
+              💡 Customers click this link → Bot opens → They can browse & order from your store!
+            </p>
+          </div>
+        </div>
+
+        {/* Promotional Message Sender */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h2 className="text-2xl font-bold mb-4 text-gray-900">📢 Send Promotional Message</h2>
+          <p className="text-gray-600 mb-4">Send promotional messages to all your customers via Telegram</p>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Message
+              </label>
+              <textarea
+                value={promoMessage}
+                onChange={(e) => setPromoMessage(e.target.value)}
+                placeholder="Enter your promotional message here...&#10;&#10;Example:&#10;🎉 Special Offer! 🎉&#10;Get 20% off on all products today!&#10;Order now: https://t.me/BazaarOpsCustomerHelpBot?start=YOUR_STORE_ID"
+                className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                💡 Tip: Include your customer bot link in the message!
+              </p>
+            </div>
+            
+            <button
+              onClick={sendPromoMessage}
+              disabled={sendingPromo || !promoMessage.trim()}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {sendingPromo ? 'Sending...' : '📤 Send to All Customers'}
+            </button>
+            
+            {promoStatus && (
+              <div className={`p-4 rounded-lg ${promoStatus.includes('✅') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                {promoStatus}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
