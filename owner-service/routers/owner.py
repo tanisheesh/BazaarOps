@@ -269,3 +269,39 @@ async def send_promotional_message(promo: PromoMessage):
     except Exception as e:
         print(f"❌ Error sending promo: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# AI Agent Manual Trigger endpoint
+class TriggerAgentRequest(BaseModel):
+    store_id: str
+    agent_type: str  # 'inventory', 'credit', 'daily_report'
+
+@router.post("/trigger-agent")
+async def trigger_agent(request: TriggerAgentRequest):
+    """
+    Manually trigger AI agents to send reports to Telegram
+    """
+    print(f"🤖 Triggering {request.agent_type} agent for store: {request.store_id}")
+    
+    try:
+        import httpx
+        
+        # Trigger the agent service
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{os.getenv('AGENT_SERVICE_URL', 'http://localhost:8003')}/api/events/trigger-agent",
+                json={
+                    "store_id": request.store_id,
+                    "agent_type": request.agent_type
+                },
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                return {"success": True, "message": f"{request.agent_type} agent triggered successfully"}
+            else:
+                return {"success": False, "message": "Failed to trigger agent"}
+                
+    except Exception as e:
+        print(f"❌ Error triggering agent: {e}")
+        return {"success": False, "message": str(e)}

@@ -53,18 +53,7 @@ def main():
         print("✅ Started: Agent-Service (Port 8003)")
         time.sleep(2)
         
-        # 4. Start Next.js Dashboard
-        print("🎨 Starting Next.js Dashboard...")
-        nextjs_process = subprocess.Popen(
-            ["npm", "run", "dev"],
-            cwd=str(BASE_DIR / "owner-dashboard"),
-            shell=True
-        )
-        processes.append(("NextJS-Dashboard", nextjs_process))
-        print("✅ Started: NextJS-Dashboard (Port 3000)")
-        time.sleep(2)
-        
-        # 5. Start Owner Telegram Bot
+        # 4. Start Owner Telegram Bot
         print("📱 Starting Owner Bot...")
         owner_bot_process = subprocess.Popen(
             [sys.executable, "bot.py"],
@@ -75,7 +64,7 @@ def main():
         print("✅ Started: Owner-Bot (@BazaarOpsAdminBot)")
         time.sleep(2)
         
-        # 6. Start Customer Telegram Bot
+        # 5. Start Customer Telegram Bot
         print("🛒 Starting Customer Bot...")
         customer_bot_process = subprocess.Popen(
             [sys.executable, "bot.py"],
@@ -86,7 +75,7 @@ def main():
         print("✅ Started: Customer-Bot (@BazaarOpsCustomerHelpBot)")
         time.sleep(2)
         
-        # 7. Start AI Scheduler
+        # 6. Start AI Scheduler
         print("🧠 Starting AI Agent Scheduler...")
         scheduler_process = subprocess.Popen(
             [sys.executable, "scheduler.py"],
@@ -97,15 +86,17 @@ def main():
         print("✅ Started: Claude-AI-Scheduler")
         
         print("\n" + "=" * 70)
-        print("🎉 All Services Running Successfully!")
+        print("🎉 All Backend Services Running Successfully!")
         print("=" * 70)
         print("\n📱 Access Points:")
-        print("   • Dashboard: http://localhost:3000")
         print("   • Owner API: http://localhost:8001")
         print("   • Customer API: http://localhost:8002")
         print("   • Agent API: http://localhost:8003")
         print("   • Owner Bot: @BazaarOpsAdminBot")
         print("   • Customer Bot: @BazaarOpsCustomerHelpBot")
+        print("\n💡 Dashboard:")
+        print("   • Run separately: cd owner-dashboard && npm run dev")
+        print("   • Access at: http://localhost:3000")
         print("\n🧠 Claude AI Agents (Automated):")
         print("   • 10:00 AM - AI Inventory Analysis (demand prediction, restocking)")
         print("   • 04:00 PM - AI Inventory Analysis (afternoon check)")

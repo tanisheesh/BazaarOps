@@ -251,6 +251,152 @@ _Hurry! Limited time offer!_`
           </a>
         </div>
 
+        {/* AI Agents Manual Triggers */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h2 className="text-2xl font-bold mb-4 text-gray-900">🤖 AI Agents - Manual Triggers</h2>
+          <p className="text-gray-600 mb-6">Manually trigger AI agents to get instant insights on Telegram</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Inventory Analysis Agent */}
+            <div className="border-2 border-blue-200 rounded-lg p-4 hover:border-blue-400 transition-colors">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">📦</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Inventory Agent</h3>
+                  <p className="text-xs text-gray-500">AI Stock Analysis</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Get AI-powered inventory insights, restocking recommendations, and stock alerts
+              </p>
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/owner/trigger-agent`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ 
+                        store_id: storeId, 
+                        agent_type: 'inventory' 
+                      })
+                    })
+                    const result = await response.json()
+                    if (result.success) {
+                      alert('✅ Inventory analysis sent to your Telegram!')
+                    } else {
+                      alert('❌ Failed to trigger agent')
+                    }
+                  } catch (error) {
+                    alert('❌ Error triggering agent')
+                  }
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors"
+              >
+                🚀 Run Now
+              </button>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Auto-runs: 10 AM & 4 PM daily
+              </p>
+            </div>
+
+            {/* Credit Analysis Agent */}
+            <div className="border-2 border-purple-200 rounded-lg p-4 hover:border-purple-400 transition-colors">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">💳</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Credit Agent</h3>
+                  <p className="text-xs text-gray-500">AI Risk Assessment</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Analyze customer credit patterns, identify risks, and get payment recommendations
+              </p>
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/owner/trigger-agent`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ 
+                        store_id: storeId, 
+                        agent_type: 'credit' 
+                      })
+                    })
+                    const result = await response.json()
+                    if (result.success) {
+                      alert('✅ Credit analysis sent to your Telegram!')
+                    } else {
+                      alert('❌ Failed to trigger agent')
+                    }
+                  } catch (error) {
+                    alert('❌ Error triggering agent')
+                  }
+                }}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-medium transition-colors"
+              >
+                🚀 Run Now
+              </button>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Auto-runs: 9:05 PM daily
+              </p>
+            </div>
+
+            {/* Daily Report Agent */}
+            <div className="border-2 border-orange-200 rounded-lg p-4 hover:border-orange-400 transition-colors">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Daily Report</h3>
+                  <p className="text-xs text-gray-500">AI Business Summary</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Get comprehensive daily business report with sales, revenue, and insights
+              </p>
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/owner/trigger-agent`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ 
+                        store_id: storeId, 
+                        agent_type: 'daily_report' 
+                      })
+                    })
+                    const result = await response.json()
+                    if (result.success) {
+                      alert('✅ Daily report sent to your Telegram!')
+                    } else {
+                      alert('❌ Failed to trigger agent')
+                    }
+                  } catch (error) {
+                    alert('❌ Error triggering agent')
+                  }
+                }}
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-medium transition-colors"
+              >
+                🚀 Run Now
+              </button>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Auto-runs: 9:00 PM daily
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <p className="text-sm text-yellow-900">
+              <strong>💡 Note:</strong> Make sure you've started the Owner Bot on Telegram to receive these reports!
+            </p>
+          </div>
+        </div>
+
         {/* Customer Bot Link */}
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-6 mb-6 text-white">
           <h2 className="text-2xl font-bold mb-2">📱 Customer Shopping Bot</h2>

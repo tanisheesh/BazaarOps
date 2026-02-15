@@ -107,7 +107,7 @@ async def place_order(store_id: str, order: CreateOrderRequest):
     try:
         async with httpx.AsyncClient() as client:
             await client.post(
-                "http://localhost:8003/api/events/trigger",
+                f"{os.getenv('AGENT_SERVICE_URL', 'http://localhost:8003')}/api/events/trigger",
                 json={
                     "event_type": "order_created",
                     "store_id": store_id,
