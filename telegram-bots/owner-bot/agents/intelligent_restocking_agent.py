@@ -92,7 +92,7 @@ Format your response as a clear, actionable Telegram message with emojis.
 Keep it concise but insightful. Focus on actionable recommendations."""
 
         message = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-3-5-sonnet-20240620",
             max_tokens=1024,
             messages=[{
                 "role": "user",

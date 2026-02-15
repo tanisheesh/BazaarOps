@@ -105,7 +105,7 @@ Provide:
 Format as a clear, motivating Telegram message with emojis. Keep it concise but insightful."""
 
         message = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-3-5-sonnet-20240620",
             max_tokens=1024,
             messages=[{
                 "role": "user",

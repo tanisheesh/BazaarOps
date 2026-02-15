@@ -6,6 +6,7 @@ import Link from 'next/link'
 interface DashboardStats {
   today_orders: number
   today_revenue: number
+  today_profit: number
   low_stock_count: number
   low_stock_items: Array<{
     name: string
@@ -102,7 +103,7 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Today's Orders */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
@@ -126,6 +127,19 @@ export default function Dashboard() {
                 </p>
               </div>
               <div className="text-4xl">💰</div>
+            </div>
+          </div>
+
+          {/* Today's Profit */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Today's Profit</p>
+                <p className="text-3xl font-bold text-emerald-600">
+                  ₹{stats?.today_profit?.toFixed(2) || '0.00'}
+                </p>
+              </div>
+              <div className="text-4xl">📈</div>
             </div>
           </div>
 
@@ -198,13 +212,13 @@ export default function Dashboard() {
             <div className="font-semibold">Customers</div>
           </Link>
           
-          <button 
-            onClick={fetchStats}
-            className="bg-gray-600 hover:bg-gray-700 text-white p-6 rounded-lg text-center transition-colors"
+          <Link 
+            href="/settings" 
+            className="bg-orange-600 hover:bg-orange-700 text-white p-6 rounded-lg text-center transition-colors"
           >
-            <div className="text-4xl mb-3">🔄</div>
-            <div className="font-semibold">Refresh</div>
-          </button>
+            <div className="text-4xl mb-3">⚙️</div>
+            <div className="font-semibold">Settings</div>
+          </Link>
         </div>
       </main>
     </div>

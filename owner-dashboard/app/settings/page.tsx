@@ -193,6 +193,20 @@ Feel free to browse and order anytime!`
     }
   }
 
+  const usePromoTemplate = () => {
+    const template = `🎉 *Special Offer!* 🎉
+
+Get *20% OFF* on all products today!
+
+🛒 Order now: https://t.me/BazaarOpsCustomerHelpBot?start=${storeId}
+
+📱 Contact: ${storeData?.phone || 'Your Phone'}
+📍 ${storeData?.name || 'Your Store'}
+
+_Hurry! Limited time offer!_`
+    setPromoMessage(template)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -208,8 +222,33 @@ Feel free to browse and order anytime!`
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-          <p className="text-gray-600">Manage your store settings and customer bot</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">⚙️ Settings</h1>
+          <p className="text-gray-600">Manage your bots, templates, and store settings</p>
+        </div>
+
+        {/* Owner Bot Connection */}
+        <div className="bg-gradient-to-r from-green-500 to-teal-600 rounded-lg shadow-lg p-6 mb-6 text-white">
+          <h2 className="text-2xl font-bold mb-2">🤖 Owner Bot - AI Insights & Alerts</h2>
+          <p className="mb-4 opacity-90">Connect to receive daily AI reports, inventory alerts, and business insights via Telegram!</p>
+          
+          <div className="bg-white/20 backdrop-blur rounded-lg p-4 mb-4">
+            <p className="text-sm font-medium mb-2">What you'll get:</p>
+            <ul className="text-sm space-y-1 opacity-90">
+              <li>• 📊 Daily AI-powered business reports (9 PM)</li>
+              <li>• 📦 Smart inventory alerts (10 AM, 4 PM)</li>
+              <li>• 💳 Credit risk analysis (9:05 PM)</li>
+              <li>• 🔔 Real-time order notifications</li>
+            </ul>
+          </div>
+          
+          <a
+            href="https://t.me/BazaarOpsAdminBot"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-8 py-3 bg-white text-green-600 rounded-lg font-semibold hover:bg-green-50 transition-colors shadow-lg"
+          >
+            📱 Open Owner Bot & Send /start
+          </a>
         </div>
 
         {/* Customer Bot Link */}
@@ -249,30 +288,46 @@ Feel free to browse and order anytime!`
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Message
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Message
+                </label>
+                <button
+                  onClick={usePromoTemplate}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  📝 Use Template
+                </button>
+              </div>
               <textarea
                 value={promoMessage}
                 onChange={(e) => setPromoMessage(e.target.value)}
-                placeholder="Enter your promotional message here...&#10;&#10;Example:&#10;🎉 Special Offer! 🎉&#10;Get 20% off on all products today!&#10;Order now: https://t.me/BazaarOpsCustomerHelpBot?start=YOUR_STORE_ID"
-                className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your promotional message here..."
+                className="w-full h-40 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                💡 Tip: Include your customer bot link in the message!
-              </p>
+              
+              {/* Formatting Instructions */}
+              <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-xs font-semibold text-blue-900 mb-2">💡 Formatting Tips:</p>
+                <div className="grid grid-cols-2 gap-2 text-xs text-blue-800">
+                  <div>• <code className="bg-blue-100 px-1 rounded">*bold text*</code> → <strong>bold text</strong></div>
+                  <div>• <code className="bg-blue-100 px-1 rounded">_italic text_</code> → <em>italic text</em></div>
+                  <div>• <code className="bg-blue-100 px-1 rounded">`code text`</code> → <code>code text</code></div>
+                  <div>• Use emojis: 🎉 🛒 📱 ✨ 💰</div>
+                </div>
+              </div>
             </div>
             
             <button
               onClick={sendPromoMessage}
               disabled={sendingPromo || !promoMessage.trim()}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {sendingPromo ? 'Sending...' : '📤 Send to All Customers'}
             </button>
             
             {promoStatus && (
-              <div className={`p-4 rounded-lg ${promoStatus.includes('✅') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+              <div className={`p-4 rounded-lg ${promoStatus.includes('✅') ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
                 {promoStatus}
               </div>
             )}

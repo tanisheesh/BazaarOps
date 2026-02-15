@@ -241,11 +241,19 @@ async def send_promotional_message(promo: PromoMessage):
         # Send to each customer
         for chat_id in promo.customer_ids:
             try:
-                await bot.send_message(
-                    chat_id=chat_id,
-                    text=promo.message,
-                    parse_mode='Markdown'
-                )
+                # Try with Markdown first, fallback to plain text if it fails
+                try:
+                    await bot.send_message(
+                        chat_id=chat_id,
+                        text=promo.message,
+                        parse_mode='Markdown'
+                    )
+                except:
+                    # If Markdown fails, send as plain text
+                    await bot.send_message(
+                        chat_id=chat_id,
+                        text=promo.message
+                    )
                 success_count += 1
             except Exception as e:
                 print(f"❌ Failed to send to {chat_id}: {e}")

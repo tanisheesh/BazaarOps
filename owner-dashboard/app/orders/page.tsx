@@ -23,7 +23,7 @@ export default function Orders() {
   const ordersPerPage = 10
   
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
-  const TELEGRAM_BOT_TOKEN = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN
+  const CUSTOMER_BOT_TOKEN = process.env.NEXT_PUBLIC_CUSTOMER_BOT_TOKEN
 
   useEffect(() => {
     const store_id = localStorage.getItem('store_id')
@@ -63,7 +63,7 @@ export default function Orders() {
       })
       
       if (response.ok) {
-        // If order completed, send Telegram message to customer
+        // If order completed, send delivery message to customer
         if (newStatus === 'completed' && customerPhone) {
           await sendDeliveryNotification(customerPhone, orderId)
         }
@@ -76,15 +76,22 @@ export default function Orders() {
 
   const sendDeliveryNotification = async (phone: string, orderId: string) => {
     try {
+      console.log('📱 Sending delivery notification to:', phone)
+      
       // Get customer's telegram chat_id from database
       const response = await fetch(`${API_URL}/api/owner/customer-telegram/${phone}`)
       const data = await response.json()
+      
+      console.log('📱 Customer telegram data:', data)
       
       if (data.telegram_chat_id) {
         // Send message via Telegram bot
         const message = `✅ *Order Delivered!*\n\nYour order #${orderId.substring(0, 8)} has been successfully delivered.\n\nThank you for shopping with us! 🎉`
         
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        console.log('📱 Sending message to chat_id:', data.telegram_chat_id)
+        console.log('📱 Using bot token:', CUSTOMER_BOT_TOKEN ? 'Token present' : 'Token missing')
+        
+        const telegramResponse = await fetch(`https://api.telegram.org/bot${CUSTOMER_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -93,9 +100,20 @@ export default function Orders() {
             parse_mode: 'Markdown'
           })
         })
+        
+        const telegramResult = await telegramResponse.json()
+        console.log('📱 Telegram API response:', telegramResult)
+        
+        if (telegramResult.ok) {
+          console.log('✅ Message sent successfully!')
+        } else {
+          console.error('❌ Telegram API error:', telegramResult)
+        }
+      } else {
+        console.log('⚠️ No telegram_chat_id found for customer')
       }
     } catch (error) {
-      console.error('Error sending delivery notification:', error)
+      console.error('❌ Error sending delivery notification:', error)
     }
   }
 

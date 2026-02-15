@@ -133,3 +133,48 @@ async def place_order(store_id: str, order: CreateOrderRequest):
         "total_amount": total,
         "message": "Order placed successfully!"
     }
+
+
+# Register customer endpoint
+class CustomerRegister(BaseModel):
+    telegram_user_id: int
+    telegram_username: str = None
+    store_id: str
+
+@router.post("/register")
+async def register_customer(data: CustomerRegister):
+    """
+    Register customer with telegram info
+    """
+    print(f"📝 Registering customer: {data.telegram_user_id} for store: {data.store_id}")
+    
+    try:
+        # Check if already exists
+        existing = db.supabase.table("customers")\
+            .select("id")\
+            .eq("telegram_chat_id", str(data.telegram_user_id))\
+            .eq("store_id", data.store_id)\
+            .execute()
+        
+        if existing.data:
+            print(f"✅ Customer already registered")
+            return {"success": True, "message": "Already registered"}
+        
+        # Create placeholder customer (will be updated during onboarding)
+        customer_data = {
+            "store_id": data.store_id,
+            "telegram_chat_id": str(data.telegram_user_id),
+            "telegram_username": data.telegram_username,
+            "name": "New Customer",
+            "phone": f"tg_{data.telegram_user_id}",  # Temporary
+            "address": "Not provided yet"
+        }
+        
+        db.supabase.table("customers").insert(customer_data).execute()
+        print(f"✅ Customer registered")
+        
+        return {"success": True, "message": "Registered successfully"}
+        
+    except Exception as e:
+        print(f"❌ Error registering customer: {e}")
+        return {"success": False, "message": str(e)}

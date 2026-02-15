@@ -41,7 +41,7 @@ class DatabaseService:
                 "store_id": store_id,
                 "customer_id": customer_id,
                 "total_amount": total_amount,
-                "status": "pending",
+                "status": "confirmed",
                 "payment_status": "unpaid" if is_credit else "paid"
             }
             
