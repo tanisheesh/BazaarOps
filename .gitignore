@@ -158,3 +158,4 @@ replit.nix
 *.pem
 .pnp.*
 DEPLOYMENT.md
+RENDER_DEPLOY.md
