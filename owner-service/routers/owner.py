@@ -196,7 +196,13 @@ async def get_customer_telegram(phone: str):
     Get customer's telegram chat_id by phone number
     """
     try:
-        customer = db.supabase.table("customers")\
+        from supabase import create_client
+        supabase = create_client(
+            os.getenv("SUPABASE_URL"),
+            os.getenv("SUPABASE_KEY")
+        )
+        
+        customer = supabase.table("customers")\
             .select("telegram_chat_id")\
             .eq("phone", phone)\
             .single()\
