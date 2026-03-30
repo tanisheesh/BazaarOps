@@ -10,6 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from events.event_bus import Event, event_bus
 from agents.order_agent import OrderAgent
 from agents.summary_agent import SummaryAgent
+import asyncio
+from datetime import datetime, timezone
 
 app = FastAPI(
     title="BazaarOps Agent Service",
@@ -81,6 +83,64 @@ async def trigger_event_get(
 @app.get("/health")
 async def health():
     return {"status": "healthy", "sdk": "claude-agent-sdk"}
+
+
+# ---------------------------------------------------------------------------
+# 6.7 Scheduler job for daily BI report at 9 PM
+# ---------------------------------------------------------------------------
+
+async def _run_daily_bi_reports():
+    """Run BI reports for all active stores. Called by scheduler at 9 PM."""
+    from supabase import create_client
+    from agents.bi_agent import generate_bi_report
+
+    supabase = create_client(
+        os.getenv("SUPABASE_URL"),
+        os.getenv("SUPABASE_KEY"),
+    )
+    try:
+        stores = supabase.table("stores").select("id").execute()
+        store_ids = [s["id"] for s in (stores.data or [])]
+    except Exception as exc:
+        print(f"❌ BI scheduler: could not fetch stores: {exc}")
+        return
+
+    for store_id in store_ids:
+        try:
+            await generate_bi_report(store_id)
+            print(f"✅ BI report sent for store {store_id}")
+        except Exception as exc:
+            print(f"❌ BI report failed for store {store_id}: {exc}")
+
+
+async def _bi_scheduler_loop():
+    """Background loop that fires daily BI reports at 21:00 local time."""
+    while True:
+        now = datetime.now(timezone.utc)
+        # Target: 21:00 UTC (9 PM)
+        target_hour = 21
+        seconds_until = ((target_hour - now.hour) % 24) * 3600 - now.minute * 60 - now.second
+        if seconds_until <= 0:
+            seconds_until += 86400
+        print(f"⏰ BI scheduler: next run in {seconds_until // 3600}h {(seconds_until % 3600) // 60}m")
+        await asyncio.sleep(seconds_until)
+        print("📊 Running daily BI reports...")
+        await _run_daily_bi_reports()
+
+
+@app.on_event("startup")
+async def start_bi_scheduler():
+    """Start the BI report scheduler on app startup."""
+    asyncio.create_task(_bi_scheduler_loop())
+    print("⏰ BI report scheduler started (daily at 9 PM UTC)")
+
+
+@app.post("/api/bi/run-report/{store_id}")
+async def trigger_bi_report(store_id: str):
+    """Manually trigger a BI report for a store."""
+    from agents.bi_agent import generate_bi_report
+    success = await generate_bi_report(store_id)
+    return {"success": success, "store_id": store_id}
 
 @app.post("/api/events/trigger-agent")
 async def trigger_agent_manual(request: dict):

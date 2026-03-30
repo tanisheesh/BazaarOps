@@ -1,11 +1,22 @@
 import asyncio
-from datetime import datetime
-from telegram import Update, Bot
-from telegram.ext import Application, CommandHandler, ContextTypes
+from datetime import datetime, timezone
+from telegram import Update, Bot, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CallbackQueryHandler,
+    CommandHandler,
+    ContextTypes,
+    ConversationHandler,
+    MessageHandler,
+    filters,
+)
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os
 from pathlib import Path
+
+# Conversation state for quantity editing
+AWAITING_QUANTITY = 1
 
 # Load .env from root directory
 root_dir = Path(__file__).parent.parent.parent
@@ -225,6 +236,150 @@ async def send_message_to_owner(store_id: str, message: str):
         print(f"❌ Error sending message: {e}")
         return False
 
+
+# ---------------------------------------------------------------------------
+# Reorder approval callbacks (2.3.2 - 2.3.3)
+# ---------------------------------------------------------------------------
+
+async def reorder_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle Approve / Edit / Reject inline button callbacks for reorders."""
+    query = update.callback_query
+    await query.answer()
+
+    data = query.data or ""
+    if not data.startswith("reorder_"):
+        return
+
+    parts = data.split(":", 1)
+    if len(parts) != 2:
+        return
+
+    action, reorder_id = parts[0].replace("reorder_", ""), parts[1]
+
+    if action == "approve":
+        success = await _approve_reorder(reorder_id)
+        if success:
+            await query.edit_message_text(
+                f"✅ *Reorder Approved!*\n\nReorder `{reorder_id[:8]}` has been approved. "
+                f"Supplier will be contacted.",
+                parse_mode="Markdown",
+            )
+        else:
+            await query.edit_message_text("❌ Failed to approve reorder. Please try again.")
+
+    elif action == "reject":
+        success = await _reject_reorder(reorder_id)
+        if success:
+            await query.edit_message_text(
+                f"❌ *Reorder Rejected*\n\nReorder `{reorder_id[:8]}` has been rejected.",
+                parse_mode="Markdown",
+            )
+        else:
+            await query.edit_message_text("❌ Failed to reject reorder. Please try again.")
+
+    elif action == "edit":
+        # Store reorder_id in user context and ask for new quantity
+        context.user_data["editing_reorder_id"] = reorder_id
+        await query.edit_message_text(
+            f"✏️ *Edit Quantity*\n\nPlease reply with the new quantity for reorder `{reorder_id[:8]}`:",
+            parse_mode="Markdown",
+        )
+        return AWAITING_QUANTITY
+
+
+async def receive_edited_quantity(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the owner's reply with a new quantity (2.3.3)."""
+    reorder_id = context.user_data.get("editing_reorder_id")
+    if not reorder_id:
+        await update.message.reply_text("❌ No active reorder edit session.")
+        return ConversationHandler.END
+
+    text = (update.message.text or "").strip()
+    try:
+        new_qty = float(text)
+        if new_qty <= 0:
+            raise ValueError("Quantity must be positive")
+    except ValueError:
+        await update.message.reply_text(
+            "❌ Invalid quantity. Please enter a positive number."
+        )
+        return AWAITING_QUANTITY
+
+    success = await _approve_reorder(reorder_id, approved_quantity=new_qty)
+    if success:
+        await update.message.reply_text(
+            f"✅ *Reorder Updated & Approved!*\n\n"
+            f"Quantity set to *{new_qty:.1f}* for reorder `{reorder_id[:8]}`.",
+            parse_mode="Markdown",
+        )
+    else:
+        await update.message.reply_text("❌ Failed to update reorder. Please try again.")
+
+    context.user_data.pop("editing_reorder_id", None)
+    return ConversationHandler.END
+
+
+async def _approve_reorder(reorder_id: str, approved_quantity: float | None = None) -> bool:
+    """Approve a reorder via Supabase (2.3.4)."""
+    try:
+        result = (
+            supabase.table("pending_supplier_orders")
+            .select("id, quantity")
+            .eq("id", reorder_id)
+            .single()
+            .execute()
+        )
+        if not result.data:
+            return False
+
+        suggested_qty = float(result.data["quantity"])
+        final_qty = approved_quantity if approved_quantity is not None else suggested_qty
+
+        supabase.table("pending_supplier_orders").update(
+            {
+                "owner_approved": True,
+                "approved_at": datetime.now(timezone.utc).isoformat(),
+                "quantity": final_qty,
+                "status": "approved",
+            }
+        ).eq("id", reorder_id).execute()
+
+        # Record for learning system
+        owner_edited = abs(final_qty - suggested_qty) > 0.01
+        edit_pct = (
+            ((final_qty - suggested_qty) / suggested_qty * 100)
+            if suggested_qty > 0
+            else 0.0
+        )
+        supabase.table("reorder_approvals").insert(
+            {
+                "reorder_id": reorder_id,
+                "suggested_quantity": suggested_qty,
+                "approved_quantity": final_qty,
+                "owner_edited": owner_edited,
+                "edit_percentage": round(edit_pct, 2),
+            }
+        ).execute()
+
+        print(f"✅ Reorder {reorder_id[:8]} approved (qty={final_qty})")
+        return True
+    except Exception as e:
+        print(f"❌ _approve_reorder error: {e}")
+        return False
+
+
+async def _reject_reorder(reorder_id: str) -> bool:
+    """Reject a reorder via Supabase."""
+    try:
+        supabase.table("pending_supplier_orders").update(
+            {"status": "rejected", "owner_approved": False}
+        ).eq("id", reorder_id).execute()
+        print(f"✅ Reorder {reorder_id[:8]} rejected")
+        return True
+    except Exception as e:
+        print(f"❌ _reject_reorder error: {e}")
+        return False
+
 def main():
     """Main function - Bot with Claude AI Agents"""
     print("🤖 BazaarOps Admin Bot")
@@ -240,6 +395,25 @@ def main():
         application.add_handler(CommandHandler("start", start_command))
         application.add_handler(CommandHandler("register", register_command))
         application.add_handler(CommandHandler("status", status_command))
+
+        # Reorder approval conversation handler (Edit Quantity flow)
+        reorder_conv = ConversationHandler(
+            entry_points=[CallbackQueryHandler(reorder_callback, pattern=r"^reorder_")],
+            states={
+                AWAITING_QUANTITY: [
+                    MessageHandler(filters.TEXT & ~filters.COMMAND, receive_edited_quantity)
+                ],
+            },
+            fallbacks=[],
+            per_user=True,
+            per_chat=True,
+        )
+        application.add_handler(reorder_conv)
+
+        # Standalone callback handler for approve/reject (no conversation needed)
+        application.add_handler(
+            CallbackQueryHandler(reorder_callback, pattern=r"^reorder_(approve|reject):")
+        )
         
         print("\n🚀 Bot is running...")
         print("📱 Commands:")
@@ -250,6 +424,7 @@ def main():
         print("  • Intelligent inventory analysis")
         print("  • Credit risk assessment")
         print("  • Daily business insights")
+        print("  • Reorder approvals (Approve/Edit/Reject)")
         print("\nPress Ctrl+C to stop\n")
         
         # Run bot - simple polling

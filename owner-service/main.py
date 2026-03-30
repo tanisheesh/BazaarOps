@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from routers import owner
+from routers import reorder
+from routers import customer_lifecycle
+from routers import credit
+from routers import analytics
 import os
 from pathlib import Path
 
@@ -27,6 +31,10 @@ app.add_middleware(
 
 # Include owner routes
 app.include_router(owner.router)
+app.include_router(reorder.router)
+app.include_router(customer_lifecycle.router)
+app.include_router(credit.router)
+app.include_router(analytics.router)
 
 # Root endpoint - test if service is running
 @app.get("/")

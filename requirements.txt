@@ -19,3 +19,11 @@ python-telegram-bot==22.6
 # AI & Scheduling
 anthropic==0.39.0
 schedule==1.2.0
+
+# Redis - pub/sub messaging and caching
+# redis.asyncio (async client) is bundled with redis>=4.2, no separate aioredis needed
+redis==5.0.1
+
+# Fuzzy string matching for NLP product matching (task 5.2)
+fuzzywuzzy==0.18.0
+python-Levenshtein==0.25.0

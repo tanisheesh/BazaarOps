@@ -32,6 +32,39 @@ class DatabaseService:
             return []
     
     @staticmethod
+    def reduce_inventory(store_id: str, product_id: str, quantity: float) -> bool:
+        """Reduce inventory quantity for a product in a store.
+        
+        Returns True on success, False on failure.
+        """
+        try:
+            # Fetch current inventory
+            response = supabase.table("inventory")\
+                .select("quantity")\
+                .eq("store_id", store_id)\
+                .eq("product_id", product_id)\
+                .execute()
+            
+            if not response.data:
+                print(f"⚠️ No inventory record found for product_id={product_id} store_id={store_id}")
+                return False
+            
+            current_quantity = float(response.data[0]["quantity"])
+            new_quantity = max(0.0, current_quantity - quantity)
+            
+            supabase.table("inventory")\
+                .update({"quantity": new_quantity})\
+                .eq("product_id", product_id)\
+                .eq("store_id", store_id)\
+                .execute()
+            
+            print(f"📦 Inventory reduced: product_id={product_id} {current_quantity} -> {new_quantity} (ordered {quantity})")
+            return True
+        except Exception as e:
+            print(f"❌ Error reducing inventory for product_id={product_id}: {e}")
+            return False
+
+    @staticmethod
     def create_order(store_id: str, customer_id: str, items: list, 
                     total_amount: float, is_credit: bool):
         """Create a new order"""
@@ -62,6 +95,15 @@ class DatabaseService:
                     "subtotal": item["quantity"] * item["unit_price"]
                 }
                 supabase.table("order_items").insert(item_data).execute()
+            
+            # Reduce inventory for each item
+            print(f"📦 Reducing inventory for order {order_id}...")
+            for item in items:
+                DatabaseService.reduce_inventory(
+                    store_id=store_id,
+                    product_id=item["product_id"],
+                    quantity=item["quantity"]
+                )
             
             return order_id
         except Exception as e:
