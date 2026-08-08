@@ -9,6 +9,9 @@
 </p>
 
 <p align="center">
+  <a href="https://bazaarops.tanisheesh.in">
+    <img src="https://img.shields.io/badge/live_demo-F97316-F97316?style=flat-square" alt="Live Demo">
+  </a>
   <img src="https://img.shields.io/badge/Next.js-black?style=flat-square&logo=next.js" alt="Next.js">
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
@@ -25,6 +28,8 @@
 ## What is BazaarOps?
 
 Small retail shop owners in India track inventory in notebooks, lose money to uncollected credit, and have no visibility into which products are actually driving profit. BazaarOps replaces that with a multi-agent AI system: Claude analyzes sales velocity and credit patterns daily, then pushes actionable alerts directly to the owner's Telegram. Customers place orders through a conversational Telegram bot with NLP — no app to install, no signup friction.
+
+> **Live demo →** [bazaarops.tanisheesh.in](https://bazaarops.tanisheesh.in)
 
 ---
 
