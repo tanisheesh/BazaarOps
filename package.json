@@ -5,7 +5,7 @@
   "scripts": {
     "start": "python main.py",
     "backend": "cd owner-service && python main.py",
-    "frontend": "cd owner-dashboard && npm run dev",
+    "frontend": "cd owner-dashboard && pnpm run dev",
     "bot": "cd telegram-bots/owner-bot && python bot.py",
     "ai-scheduler": "cd telegram-bots/owner-bot && python scheduler.py"
   },
